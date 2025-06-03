@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Footprint & Rewards Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 400px;
+      margin: auto;
+    }
+    label, select, input {
+      display: block;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+    button {
+      padding: 10px;
+      width: 100%;
+    }
+    .results {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <h2>Footprint & Rewards Calculator</h2>
+
+  <label for="food">Select Food Item:</label>
+  <select id="food">
+    <option value="Quarter Pounder">Quarter Pounder (McDonalds)</option>
+    <option value="Big Mac">Big Mac (McDonalds)</option>
+    <option value="McChicken">McChicken (McDonalds)</option>
+    <option value="Whopper">Whopper (Burger King)</option>
+    <option value="Impossible Whopper">Impossible Whopper (Burger King)</option>
+  </select>
+
+  <label for="weight">Enter Weight (oz):</label>
+  <input type="number" id="weight" value="4" min="1" />
+
+  <button onclick="calculateFootprint()">Calculate</button>
+
+  <div class="results" id="output"></div>
+
+  <script>
+    const foodWeights = {
+      "Quarter Pounder": 4,
+      "Big Mac": 3.2,
+      "McChicken": 5.04,
+      "Whopper": 3.879,
+      "Impossible Whopper": 3.99
+    };
+
+    function getCarbonFP(name, weight) {
+      let fp = 0;
+      if (name === "McChicken") {
+        fp = (1.26 / 4) * weight;
+      } else if (name === "Impossible Whopper") {
+        fp = 6.61 * 0.2;
+      } else {
+        fp = (6.61 / 4) * weight;
+      }
+      return fp;
+    }
+
+    function getWaterFP(name, weight) {
+      let fp = 0;
+      if (name === "McChicken") {
+        fp = 4.325 * weight;
+      } else if (name === "Impossible Whopper") {
+        fp = 106.8;
+      } else {
+        fp = 15.415 * weight;
+      }
+      return fp;
+    }
+
+    function getPoints(water, carbon) {
+      const smallWater = 500.0;
+      const smallCarbon = 5.0;
+      const largeWater = 1000.0;
+      const largeCarbon = 10.0;
+      let pointsToAdd = 0;
+
+      if (water >= 0 && water <= smallWater) {
+        pointsToAdd += 100;
+      } else if (water > smallWater && water <= largeWater) {
+        pointsToAdd += 50;
+      } else {
+        pointsToAdd += 5;
+      }
+
+      if (carbon >= 0 && carbon <= smallCarbon) {
+        pointsToAdd += 100;
+      } else if (carbon > smallCarbon && carbon <= largeCarbon) {
+        pointsToAdd += 50;
+      } else {
+        pointsToAdd += 5;
+      }
+
+      return pointsToAdd;
+    }
+
+    function calculateFootprint() {
+      const food = document.getElementById("food").value;
+      const weightInput = document.getElementById("weight");
+
+      // Auto-fill weight based on selected food
+      const defaultWeight = foodWeights[food] || 4;
+      if (!weightInput.value || parseFloat(weightInput.value) <= 0) {
+        weightInput.value = defaultWeight;
+      }
+
+      const weight = parseFloat(weightInput.value);
+      const carbon = getCarbonFP(food, weight);
+      const water = getWaterFP(food, weight);
+      const points = getPoints(water, carbon);
+
+      document.getElementById("output").innerHTML =
+        `<strong>Results:</strong><br>
+         Carbon Footprint: ${carbon.toFixed(2)} kg CO₂<br>
+         Water Footprint: ${water.toFixed(2)} L<br>
+         Points Earned: ${points}`;
+    }
+  </script>
+</body>
+</html>
