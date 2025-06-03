@@ -8,125 +8,123 @@
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
-      max-width: 400px;
+      max-width: 800px;
       margin: auto;
+      text-align: center;
     }
-    label, select, input {
-      display: block;
-      margin-bottom: 10px;
+    h2 {
+      margin-bottom: 30px;
+    }
+    .card-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+    .card {
+      width: 180px;
+      height: 240px;
+      perspective: 1000px;
+    }
+    .card-inner {
+      position: relative;
       width: 100%;
+      height: 100%;
+      transition: transform 0.8s;
+      transform-style: preserve-3d;
+      cursor: pointer;
     }
-    button {
-      padding: 10px;
+    .card:hover .card-inner {
+      transform: rotateY(180deg);
+    }
+    .card-front, .card-back {
+      position: absolute;
       width: 100%;
-    }
-    .results {
-      margin-top: 20px;
-      padding: 10px;
+      height: 100%;
+      backface-visibility: hidden;
       border: 1px solid #ccc;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .card-front img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .card-back {
       background-color: #f9f9f9;
+      transform: rotateY(180deg);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+    }
+    .card-back h4 {
+      margin: 10px 0 5px;
+    }
+    .card-back p {
+      margin: 5px 0;
     }
   </style>
 </head>
 <body>
-  <h2>Footprint & Rewards Calculator</h2>
-
-  <label for="food">Select Food Item:</label>
-  <select id="food">
-    <option value="Quarter Pounder">Quarter Pounder (McDonalds)</option>
-    <option value="Big Mac">Big Mac (McDonalds)</option>
-    <option value="McChicken">McChicken (McDonalds)</option>
-    <option value="Whopper">Whopper (Burger King)</option>
-    <option value="Impossible Whopper">Impossible Whopper (Burger King)</option>
-  </select>
-
-  <label for="weight">Enter Weight (oz):</label>
-  <input type="number" id="weight" value="4" min="1" />
-
-  <button onclick="calculateFootprint()">Calculate</button>
-
-  <div class="results" id="output"></div>
+  <h2>Click an Item to View its Environmental Footprint</h2>
+  <div class="card-grid" id="cardGrid"></div>
 
   <script>
-    const foodWeights = {
-      "Quarter Pounder": 4,
-      "Big Mac": 3.2,
-      "McChicken": 5.04,
-      "Whopper": 3.879,
-      "Impossible Whopper": 3.99
-    };
+    const foodData = [
+      { name: "Quarter Pounder", restaurant: "McDonalds", weight: 4, image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/McDonald%27s-Quarter-Pounder_with_Cheese.jpg/320px-McDonald%27s-Quarter-Pounder_with_Cheese.jpg" },
+      { name: "Big Mac", restaurant: "McDonalds", weight: 3.2, image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Big_Mac_hamburger.jpg/320px-Big_Mac_hamburger.jpg" },
+      { name: "McChicken", restaurant: "McDonalds", weight: 5.04, image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/McChicken.jpg/320px-McChicken.jpg" },
+      { name: "Whopper", restaurant: "Burger King", weight: 3.879, image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Burger_King_Whopper.jpg/320px-Burger_King_Whopper.jpg" },
+      { name: "Impossible Whopper", restaurant: "Burger King", weight: 3.99, image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Burger_King_Impossible_Whopper.jpg/320px-Burger_King_Impossible_Whopper.jpg" }
+    ];
 
     function getCarbonFP(name, weight) {
-      let fp = 0;
       if (name === "McChicken") {
-        fp = (1.26 / 4) * weight;
+        return (1.26 / 4) * weight;
       } else if (name === "Impossible Whopper") {
-        fp = 6.61 * 0.2;
+        return 6.61 * 0.2;
       } else {
-        fp = (6.61 / 4) * weight;
+        return (6.61 / 4) * weight;
       }
-      return fp;
     }
 
     function getWaterFP(name, weight) {
-      let fp = 0;
       if (name === "McChicken") {
-        fp = 4.325 * weight;
+        return 4.325 * weight;
       } else if (name === "Impossible Whopper") {
-        fp = 106.8;
+        return 106.8;
       } else {
-        fp = 15.415 * weight;
+        return 15.415 * weight;
       }
-      return fp;
     }
 
-    function getPoints(water, carbon) {
-      const smallWater = 500.0;
-      const smallCarbon = 5.0;
-      const largeWater = 1000.0;
-      const largeCarbon = 10.0;
-      let pointsToAdd = 0;
+    const grid = document.getElementById("cardGrid");
 
-      if (water >= 0 && water <= smallWater) {
-        pointsToAdd += 100;
-      } else if (water > smallWater && water <= largeWater) {
-        pointsToAdd += 50;
-      } else {
-        pointsToAdd += 5;
-      }
+    foodData.forEach(item => {
+      const carbon = getCarbonFP(item.name, item.weight).toFixed(2);
+      const water = getWaterFP(item.name, item.weight).toFixed(2);
 
-      if (carbon >= 0 && carbon <= smallCarbon) {
-        pointsToAdd += 100;
-      } else if (carbon > smallCarbon && carbon <= largeCarbon) {
-        pointsToAdd += 50;
-      } else {
-        pointsToAdd += 5;
-      }
-
-      return pointsToAdd;
-    }
-
-    function calculateFootprint() {
-      const food = document.getElementById("food").value;
-      const weightInput = document.getElementById("weight");
-
-      // Auto-fill weight based on selected food
-      const defaultWeight = foodWeights[food] || 4;
-      if (!weightInput.value || parseFloat(weightInput.value) <= 0) {
-        weightInput.value = defaultWeight;
-      }
-
-      const weight = parseFloat(weightInput.value);
-      const carbon = getCarbonFP(food, weight);
-      const water = getWaterFP(food, weight);
-      const points = getPoints(water, carbon);
-
-      document.getElementById("output").innerHTML =
-        `<strong>Results:</strong><br>
-         Carbon Footprint: ${carbon.toFixed(2)} kg CO₂<br>
-         Water Footprint: ${water.toFixed(2)} L<br>
-         Points Earned: ${points}`;
-    }
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="card-inner">
+          <div class="card-front">
+            <img src="${item.image}" alt="${item.name}" />
+          </div>
+          <div class="card-back">
+            <h4>${item.name}</h4>
+            <p><strong>Carbon:</strong> ${carbon} kg CO₂</p>
+            <p><strong>Water:</strong> ${water} L</p>
+            <p><small>${item.restaurant}</small></p>
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
   </script>
 </body>
 </html>
